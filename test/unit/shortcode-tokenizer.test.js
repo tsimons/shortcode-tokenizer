@@ -174,6 +174,16 @@ describe('ShortcodeTokenizer', () => {
 
       expect(result.toString()).to.equal('[basket total=32 tax=3.2][/basket]')
     })
+
+    it('should treat non-whitelisted tokens as TEXT', () => {
+      let input = '[thisone] [notthisone]'
+      tokenizer.options.whitelist = ['thisone'];
+      const result = tokenizer.tokens(input);
+      expect(result[0].name).to.equal('thisone');
+      expect(result[0].type).to.equal('OPEN');
+      expect(result[1].name).to.equal(null);
+      expect(result[1].type).to.equal('TEXT');
+    })
   })
 
   describe('Tokenize function', () => {
