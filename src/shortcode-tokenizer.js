@@ -79,11 +79,12 @@ function castValue(value) {
  * and as a node in the resulting AST.
  */
 export class Token {
-  constructor(type, body, pos = 0) {
+  constructor(type, body, pos = 0, strict = true) {
     this.name = null
     this.type = type
     this.body = body
     this.pos = pos
+    this.strict = strict
     this.children = []
     this.params = {}
     this.isClosed = type === SELF_CLOSING
@@ -96,9 +97,15 @@ export class Token {
   init() {
     if (this.type !== TEXT && this.type !== ERROR) {
       const match = this.matchBody()
-      this.initName(match)
-      if (match[2]) {
-        this.initParams(match[2])
+      if (match === null) {
+        if (this.strict) {
+          throw new SyntaxError('Invalid ' + this.type + ' token: ' + this.body)
+        }
+      } else {
+        this.initName(match)
+        if (match[2]) {
+          this.initParams(match[2])
+        }
       }
     }
   }
@@ -197,9 +204,6 @@ export class Token {
     }
 
     let match = this.body.match(rx)
-    if (match === null) {
-      throw new SyntaxError('Invalid ' + this.type + ' token: ' + this.body)
-    }
     return match
   }
 
@@ -297,7 +301,7 @@ export default class ShortcodeTokenizer {
       this.input(input)
     }
 
-    if (typeof this.buf !== 'string') {
+    if (typeof this.buf !== 'string' && this.options.strict) {
       throw new Error('Invalid input')
     }
 
@@ -346,7 +350,7 @@ export default class ShortcodeTokenizer {
           if (this.options.strict) {
             throw new SyntaxError('Unmatched close token: ' + token.body)
           } else {
-            let err = new Token(ERROR, token.body)
+            let err = new Token(ERROR, token.body, 0, this.options.strict)
             if (!parent) {
               ast.push(err)
             } else {
@@ -365,14 +369,16 @@ export default class ShortcodeTokenizer {
         }
       } else {
         /* istanbul ignore next */
-        throw new SyntaxError('Unknown token: ' + token.type)
+        if (this.options.strict) {
+          throw new SyntaxError('Unknown token: ' + token.type)
+        }
       }
     }
     if (parent) {
       if (this.options.strict) {
         throw new SyntaxError('Unmatched open token: ' + parent.body)
       } else {
-        ast.push(new Token(ERROR, token.body))
+        ast.push(new Token(ERROR, token.body, 0, this.options.strict))
       }
     }
     return ast
@@ -423,7 +429,7 @@ export default class ShortcodeTokenizer {
 
     // all text
     if (match === null) {
-      let token = new Token(TEXT, this.buf, this.pos)
+      let token = new Token(TEXT, this.buf, this.pos, this.options.strict)
       this.pos += this.buf.length
       this.buf = null
       return token
@@ -436,7 +442,8 @@ export default class ShortcodeTokenizer {
       tokens.push(new Token(
         TEXT,
         this.buf.substring(0, match.index),
-        this.pos
+        this.pos,
+        this.options.strict
       ))
     }
 
@@ -444,7 +451,8 @@ export default class ShortcodeTokenizer {
     tokens.push(new Token(
       getTokenType(match[0]),
       match[0],
-      this.pos + match.index
+      this.pos + match.index,
+      this.options.strict
     ))
 
     // shorten buffer
