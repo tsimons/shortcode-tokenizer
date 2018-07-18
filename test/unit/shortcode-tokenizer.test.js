@@ -269,7 +269,7 @@ describe('ShortcodeTokenizer', () => {
 
     it('should convert dangling CLOSE if not strict', () => {
       tokenizer.options.strict = false
-      expect(tokenizer.input('[/code]').ast()).to.eql([new Token('ERROR', '[/code]')])
+      expect(tokenizer.input('[/code]').ast()).to.eql([new Token('ERROR', '[/code]', 0, tokenizer.options.strict)])
     })
 
     it('should throw exception if orfant OPEN', () => {
