@@ -23,7 +23,9 @@ const RX_PARAMS = '(?:(?:' + RX_PARAM + ')(?:(?!\\s+/?\\])\\s|))+'
 
 /* matches all code token types, used for quickly
    finding potentia code tokens */
-const RX_ENCLOSURE   = '\\[\\/?[a-zA-Z][^\\]]+\\]'
+const RX_ENCLOSURE   = '\\[\\/?([a-zA-Z][^\\]]+)\\]'
+/* matches the name in the enclosure */
+const RX_NAME        = '(' + RX_KEY + ')'
 /* matches opening code tokens [row] */
 const RX_OPEN        = '\\[(' + RX_KEY + ')(\\s' + RX_PARAMS + ')?\\]'
 /* matches self-closing code tokens [row/] */
@@ -34,6 +36,7 @@ const RX_CLOSE       = '\\[\\/(' + RX_KEY + ')\\]'
 /* case-insensitive regular expressions */
 const rxParams      = new RegExp(RX_PARAMS.substring(0, RX_PARAMS.length - 1), 'ig')
 const rxEnclosure   = new RegExp(RX_ENCLOSURE, 'i')
+const rxName        = new RegExp(RX_NAME, 'i')
 const rxOpen        = new RegExp(RX_OPEN, 'i')
 const rxClose       = new RegExp(RX_CLOSE, 'i')
 const rxSelfclosing = new RegExp(RX_SELFCLOSING, 'i')
@@ -231,11 +234,11 @@ export class Token {
  */
 export default class ShortcodeTokenizer {
 
-  constructor(input = null, options = {strict: true, skipWhiteSpace: false}) {
+  constructor(input = null, options = {strict: true, skipWhiteSpace: false, whitelist: false }) {
     if (typeof options === 'boolean') {
-      options = {strict: options, skipWhiteSpace: false}
+      options = {strict: options, skipWhiteSpace: false, whitelist: false }
     }
-    this.options = Object.assign({strict: true, skipWhiteSpace: false}, options)
+    this.options = Object.assign({strict: true, skipWhiteSpace: false, whitelist: false }, options)
     this.buf = null
     this.originalBuf = null
     this.pos = 0
@@ -426,6 +429,15 @@ export default class ShortcodeTokenizer {
     }
 
     let match = this.buf.match(rxEnclosure)
+
+    // Whitelist - Treat as text if not whitelisted
+    if (match && this.options.whitelist) {
+      let name = match[1].match(rxName)[1]
+
+      if (this.options.whitelist.indexOf(name) === -1) {
+        match = null
+      }
+    }
 
     // all text
     if (match === null) {
