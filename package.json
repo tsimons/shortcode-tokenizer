@@ -1,11 +1,12 @@
 {
   "name": "@tsimons/shortcode-tokenizer",
-  "version": "0.7.0",
+  "version": "0.7.2",
   "public": true,
   "description": "",
   "main": "dist/shortcode-tokenizer.js",
   "scripts": {
-    "test": "poi test && cat ./coverage/report-lcov/lcov.info | coveralls -v && rm -rf ./coverage ",
+    "test":
+      "poi test && cat ./coverage/report-lcov/lcov.info | coveralls -v && rm -rf ./coverage ",
     "watch": "poi",
     "build": "poi build --format cjs",
     "preversion": "npm run test",
