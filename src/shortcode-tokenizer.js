@@ -450,9 +450,8 @@ export default class ShortcodeTokenizer {
       ))
     }
 
-    // matching token
-
-    // set TokenType, non-whitelisted = TEXT
+    // set TokenType,
+    // non-whitelisted = TEXT
     const name = match[1].match(rxName)[1];
     let tokenType = null;
     if (this.options.whitelist && this.options.whitelist.indexOf(name) === -1) {

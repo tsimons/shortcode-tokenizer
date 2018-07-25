@@ -179,7 +179,6 @@ describe('ShortcodeTokenizer', () => {
       let input = '[notthisone] [thisone]'
       tokenizer.options.whitelist = ['thisone'];
       const result = tokenizer.tokens(input);
-      console.log(result)
       expect(result[0].name).to.equal(null);
       expect(result[0].type).to.equal("TEXT");
       expect(result[1].name).to.equal(null);
