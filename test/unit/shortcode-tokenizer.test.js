@@ -176,13 +176,16 @@ describe('ShortcodeTokenizer', () => {
     })
 
     it('should treat non-whitelisted tokens as TEXT', () => {
-      let input = '[thisone] [notthisone]'
+      let input = '[notthisone] [thisone]'
       tokenizer.options.whitelist = ['thisone'];
       const result = tokenizer.tokens(input);
-      expect(result[0].name).to.equal('thisone');
-      expect(result[0].type).to.equal('OPEN');
+      console.log(result)
+      expect(result[0].name).to.equal(null);
+      expect(result[0].type).to.equal("TEXT");
       expect(result[1].name).to.equal(null);
-      expect(result[1].type).to.equal('TEXT');
+      expect(result[1].type).to.equal("TEXT");
+      expect(result[2].name).to.equal("thisone");
+      expect(result[2].type).to.equal("OPEN");
     })
   })
 
