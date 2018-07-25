@@ -430,15 +430,6 @@ export default class ShortcodeTokenizer {
 
     let match = this.buf.match(rxEnclosure)
 
-    // Whitelist - Treat as text if not whitelisted
-    if (match && this.options.whitelist) {
-      let name = match[1].match(rxName)[1]
-
-      if (this.options.whitelist.indexOf(name) === -1) {
-        match = null
-      }
-    }
-
     // all text
     if (match === null) {
       let token = new Token(TEXT, this.buf, this.pos, this.options.strict)
@@ -459,9 +450,19 @@ export default class ShortcodeTokenizer {
       ))
     }
 
-    // matching token
+    // set TokenType,
+    // non-whitelisted = TEXT
+    const name = match[1].match(rxName)[1];
+    let tokenType = null;
+    if (this.options.whitelist && this.options.whitelist.indexOf(name) === -1) {
+      tokenType = TEXT;
+    } else {
+      tokenType = getTokenType(match[0]);
+    }
+
+    // Regular TOKEN
     tokens.push(new Token(
-      getTokenType(match[0]),
+      tokenType,
       match[0],
       this.pos + match.index,
       this.options.strict
